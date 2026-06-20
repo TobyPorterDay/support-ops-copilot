@@ -69,8 +69,10 @@ def compute_figures(predictions_path: str = PREDICTIONS_PATH,
     # Volume: state with the most High-risk tickets
     state_most_high_tickets = high_state_ct.most_common(1)[0][0] if high_state_ct else ""
 
-    # Rate: state with the highest % High among states with ≥ 10 tickets
-    eligible = {s: c for s, c in all_state_ct.items() if c >= 10}
+    min_state_tickets = 10
+
+    # Rate: state with the highest % High among states with ≥ min_state_tickets
+    eligible = {s: c for s, c in all_state_ct.items() if c >= min_state_tickets}
     if eligible:
         high_rate_by_state = {s: high_state_ct.get(s, 0) / c for s, c in eligible.items()}
         state_highest_escalation_rate = max(high_rate_by_state, key=high_rate_by_state.get)
@@ -81,14 +83,15 @@ def compute_figures(predictions_path: str = PREDICTIONS_PATH,
     largest_category = cat_counts.most_common(1)[0][0]
 
     return {
-        "total":                        total,
-        "per_category":                 per_category,
-        "per_risk":                     per_risk,
-        "escalation_rate":              escalation_rate,
-        "relief_rate":                  relief_rate,
-        "state_most_high_tickets":      state_most_high_tickets,
+        "total":                         total,
+        "per_category":                  per_category,
+        "per_risk":                      per_risk,
+        "escalation_rate":               escalation_rate,
+        "relief_rate":                   relief_rate,
+        "state_most_high_tickets":       state_most_high_tickets,
         "state_highest_escalation_rate": state_highest_escalation_rate,
-        "largest_category":             largest_category,
+        "min_state_tickets":             min_state_tickets,
+        "largest_category":              largest_category,
         # Reliability constants from 56-row validation (eval_results.md @ ef1ecf3)
         "high_tier_precision":   62,
         "high_tier_recall":      92,
