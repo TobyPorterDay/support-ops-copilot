@@ -176,20 +176,37 @@ def _collect_valid_numbers(obj) -> set:
 
 def verify(narrative: str, figures: dict) -> tuple[str, list[str]]:
     """
-    Extract every numeric token from the narrative and check it appears in
-    the figures dict. Returns ('PASS', []) or ('FAILED VERIFICATION', [issues]).
+    Two-phase check:
+    1. Strip the literal escalation_caveat text; scan the remaining body for
+       any reliability constant (high_tier_precision, high_tier_recall,
+       false_flag_rate) — these must only appear inside the caveat block.
+    2. Check every numeric token in the body exists in the figures dict.
+
+    Returns ('PASS', []) or ('FAILED VERIFICATION', [issues]).
     """
     valid = _collect_valid_numbers(figures)
+    caveat_only = {
+        figures["high_tier_precision"],
+        figures["high_tier_recall"],
+        figures["false_flag_rate"],
+    }
 
-    # Extract percentages (e.g. "73%") then bare integers
-    pct_hits  = [(int(m), f"{m}%")  for m in re.findall(r'(\d+)%', narrative)]
-    bare_text = re.sub(r'\d+%', '', narrative)
+    # Remove the caveat block before scanning the main body
+    body = narrative.replace(figures["escalation_caveat"], "")
+
+    pct_hits  = [(int(m), f"{m}%") for m in re.findall(r'(\d+)%', body)]
+    bare_text = re.sub(r'\d+%', '', body)
     int_hits  = [(int(m), m) for m in re.findall(r'\b(\d+)\b', bare_text)]
 
     failed = []
     for val, token in pct_hits + int_hits:
         if val not in valid:
-            failed.append(f"{token!r} → {val} not found in figures")
+            failed.append(f"{token!r} → {val} not in figures at all")
+        elif val in caveat_only:
+            failed.append(
+                f"{token!r} → {val} is a reliability constant "
+                f"(precision/recall/false-flag-rate) but appears outside the caveat block"
+            )
 
     status = "PASS" if not failed else "FAILED VERIFICATION"
     return status, failed
