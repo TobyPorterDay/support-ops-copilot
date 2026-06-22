@@ -1,0 +1,11 @@
+.env
+.DS_Store
+__pycache__/
+*.pyc
+
+# Raw CFPB data — contains consumer complaint narratives, not committed
+complaints.csv
+working_sample.csv
+
+# Intermediate/full prediction runs — generated output
+predictions_full.csv
