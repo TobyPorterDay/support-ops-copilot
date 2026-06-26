@@ -1,5 +1,7 @@
 # Support Ops Copilot
 
+> This project was built using Claude Code and a Claude chat.
+
 A proof-of-concept pipeline for automatically classifying consumer financial complaints and generating an executive summary report. Built against publicly available CFPB complaint data.
 
 ## What it does
